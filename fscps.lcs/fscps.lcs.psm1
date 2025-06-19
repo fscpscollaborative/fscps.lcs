@@ -1,4 +1,4 @@
-﻿$script:ModuleRoot = "D:\Sources\fscps.lcs\fscps.lcs"
+﻿$script:ModuleRoot = "$PSScriptRoot\fscps.lcs"
 $script:ModuleVersion = (Import-PowerShellDataFile -Path "$($script:ModuleRoot)\fscps.lcs.psd1").ModuleVersion
 $Script:DefaultTempPath = "c:\temp\fscps.lcs"
 # Detect whether at some level dotsourcing was enforced
