@@ -1,0 +1,7 @@
+﻿publish
+TestResults
+_test.ps1
+/library/fscps.lcs/bin
+/library/fscps.lcs/obj
+.vs
+.playwright
