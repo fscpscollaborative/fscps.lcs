@@ -1,6 +1,10 @@
 ﻿$script:ModuleRoot = "$PSScriptRoot"
 $script:ModuleVersion = (Import-PowerShellDataFile -Path "$($script:ModuleRoot)\fscps.lcs.psd1").ModuleVersion
 $Script:DefaultTempPath = "c:\temp\fscps.lcs"
+$Script:BinFolder = "$($Script:ModuleRoot)\bin"
+$Script:PlaywrightDll = "$($Script:BinFolder)\Microsoft.Playwright.dll"
+$Script:CookiesPath = "$Script:BinFolder\.playwright\state.json"
+
 # Detect whether at some level dotsourcing was enforced
 $script:doDotSource = Get-PSFConfigValue -FullName fscps.lcs.Import.DoDotSource -Fallback $false
 if ($fscps.lcs_dotsourcemodule) { $script:doDotSource = $true }
@@ -84,10 +88,19 @@ else
 		. Import-ModuleFile -Path "$($script:ModuleRoot)\resourcesAfter.ps1"
 	}
 }
-$Script:BinFolder = "$($Script:ModuleRoot)\bin"
-$Script:PlaywrightDll = "$($Script:BinFolder)\Microsoft.Playwright.dll"
-$Script:CookiesPath = "$Script:BinFolder\.playwright\state.json"
 
+function Ensure-PlaywrightBrowsers {
+    # Check for the .playwright folder or a marker file to avoid redundant installs
+    $browsersMarker = Join-Path $Script:BinFolder ".playwright" 
+    if (-not (Test-Path $browsersMarker)) {
+        Write-Verbose "Installing Playwright browsers..."
+        $Env:PLAYWRIGHT_DRIVER_SEARCH_PATH = "$Script:BinFolder"
+        $arguments = @("install", "--with-deps")
+        [Microsoft.Playwright.Program]::Main($arguments)
+    } else {
+        Write-Verbose "Playwright browsers already installed."
+    }
+}
 #region Playwright
 $tempFolder = [System.IO.Path]::Combine($Script:DefaultTempPath, "Microsoft.Playwright")
 [System.IO.Directory]::CreateDirectory($Script:tempFolder) | Out-Null
@@ -107,16 +120,11 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 Get-ChildItem $tempFolder -Recurse | Where-Object { $_.Name -eq "Microsoft.Playwright.dll" } | ForEach-Object {
     $dllPath = $_.FullName
-	Copy-Item -Path $dllPath -Destination "$($script:PlaywrightDll)" -Force
+    Copy-Item -Path $dllPath -Destination "$($script:PlaywrightDll)" -Force
     [Reflection.Assembly]::Load([System.IO.File]::ReadAllBytes("$($script:PlaywrightDll)")) | Out-Null
 }
-# Load the Playwright library
-$Env:PLAYWRIGHT_DRIVER_SEARCH_PATH = "$script:BinFolder"
-$arguments = @(
-    "install",
-    "--with-deps"
-)
-[Microsoft.Playwright.Program]::Main($arguments)
+# Ensure Playwright browsers are installed
+Ensure-PlaywrightBrowsers
 #endregion Playwright
 
 #endregion Load individual files

@@ -39,7 +39,7 @@ if (-not $WorkingDirectory) { $WorkingDirectory = Split-Path $PSScriptRoot }
 # Build Library
 if ($Build) {
 	dotnet build "$WorkingDirectory\library\fscps.lcs.sln" -c Release
-	Copy-Item -Path "$WorkingDirectory\library\fscps.lcs\bin\Release\net8.0\*" -Destination "$WorkingDirectory\fscps.lcs\bin" -Recurse -Force
+	Copy-Item -Path "$WorkingDirectory\library\fscps.lcs\bin\Release\net9.0\*" -Destination "$WorkingDirectory\fscps.lcs\bin" -Recurse -Force
 	if ($LASTEXITCODE -ne 0) {
 		throw "Failed to build fscps.lcs.dll!"
 	}

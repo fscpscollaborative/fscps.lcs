@@ -50,4 +50,3 @@ function Get-PWRequestOptions
         Invoke-TimeSignal -End
     }
 }
-
