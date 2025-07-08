@@ -65,12 +65,12 @@ function Get-FSCPSLCSSettings {
             $tmpSettingsFilePath = "C:\temp\settings.json"
             $null = Test-PathExists -Path "C:\temp\" -Type Container -Create
             $null = Set-Content $tmpSettingsFilePath $SettingsJsonString -Force -PassThru
-            $null = Set-FSCPSSettings -SettingsFilePath $tmpSettingsFilePath
+            $null = Set-FSCPSLCSSettings -SettingsFilePath $tmpSettingsFilePath
         }
 
         if(-not ($SettingsJsonPath -eq ""))
         {
-            $null = Set-FSCPSSettings -SettingsFilePath $SettingsJsonPath
+            $null = Set-FSCPSLCSSettings -SettingsFilePath $SettingsJsonPath
         }        
     }
     process{         
