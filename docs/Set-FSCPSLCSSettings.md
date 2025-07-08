@@ -26,7 +26,7 @@ All settings retrieved from this cmdlets is to be considered the default paramet
 
 ### EXAMPLE 1
 ```
-Set-FSCPSSettings -SettingsFilePath "c:\temp\settings.json"
+Set-FSCPSLCSSettings -SettingsFilePath "c:\temp\settings.json"
 ```
 
 This will output the current FSCPS configuration.

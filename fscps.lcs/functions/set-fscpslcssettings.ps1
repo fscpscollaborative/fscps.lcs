@@ -15,7 +15,7 @@
         Set path to the settings.json file
         
     .EXAMPLE
-        PS C:\> Set-FSCPSSettings -SettingsFilePath "c:\temp\settings.json"
+        PS C:\> Set-FSCPSLCSSettings -SettingsFilePath "c:\temp\settings.json"
         
         This will output the current FSCPS configuration.
         The object returned will be a Hashtable.
@@ -219,7 +219,7 @@ function Set-FSCPSLCSSettings {
     }
     process{
         Invoke-TimeSignal -Start    
-        $res = Get-FSCPSSettings -OutputAsHashtable
+        $res = Get-FSCPSLCSSettings -OutputAsHashtable
 
         $settingsFiles | ForEach-Object {
             $settingsFile = $_
