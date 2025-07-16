@@ -59,8 +59,7 @@ function Get-BrowserContext {    [CmdletBinding()]
     }
     process {
         if (-not $_browserContext) {                        
-            $browser = $Script:Playwright.Chromium.LaunchAsync([Microsoft.Playwright.BrowserTypeLaunchOptions]@{ Headless = $_headless }).Result
-    
+            $browser = $Script:Playwright.Chromium.LaunchAsync([Microsoft.Playwright.BrowserTypeLaunchOptions]@{ Headless = $_headless; Timeout = 30000 }).Result
             if(Test-Path "$Script:CookiesPath" -ErrorAction SilentlyContinue) {
                 $_browserContext = $browser.NewContextAsync(@{
                     StorageStatePath = $Script:CookiesPath

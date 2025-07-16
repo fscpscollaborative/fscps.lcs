@@ -12,7 +12,7 @@
 RootModule = 'fscps.lcs.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.20'
+ModuleVersion = '1.0.22'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()

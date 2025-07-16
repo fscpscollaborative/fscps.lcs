@@ -1,19 +1,4 @@
-function Cleanup-Session{
-    if($Script:CurrentPage)
-    {
-        $Script:CurrentPage.CloseAsync().GetAwaiter().GetResult() | Out-Null
-        $Script:CurrentPage = $null
-    }
-    if($Script:BrowserContext) {
-        $Script:BrowserContext.CloseAsync().GetAwaiter().GetResult() | Out-Null
-        $Script:BrowserContext.DisposeAsync().GetAwaiter().GetResult() | Out-Null
-        $Script:BrowserContext = $null
-    }
-    if($Script:Playwright) {
-        $Script:Playwright.Dispose() | Out-Null
-        $Script:Playwright = $null
-    }
-}
+
 
 function Get-PWRequestOptions
 {
