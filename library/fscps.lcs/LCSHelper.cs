@@ -7,6 +7,11 @@ namespace fcsps.lcs
 {
     public class LCSHelper
     {
+        public static async Task<IPlaywright> GetPlaywrightAsync()
+        {
+            return await Playwright.CreateAsync();
+        }
+        
         public async Task GetAuthorizationCookies()
         {
             // Initialize Playwright
