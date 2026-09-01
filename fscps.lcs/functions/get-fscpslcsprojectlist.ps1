@@ -1,4 +1,4 @@
-
+﻿
 <#
     .SYNOPSIS
         Retrieves a list of all projects from D365 LCS with optional paging parameters.
@@ -76,7 +76,7 @@ function Get-FSCPSLCSProjectList {
        
     }
     END {
-        Cleanup-Session
+        Close-Session
         Invoke-TimeSignal -End
     }    
 }

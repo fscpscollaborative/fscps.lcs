@@ -93,22 +93,72 @@ $tempFolder = [System.IO.Path]::Combine($Script:DefaultTempPath, "Microsoft.Play
 [System.IO.Directory]::CreateDirectory($Script:tempFolder) | Out-Null
 $nugetUrl = "https://www.nuget.org/api/v2/package/Microsoft.Playwright"
 $nugetPackagePath = [System.IO.Path]::Combine($tempFolder, "Microsoft.Playwright.nupkg")
-
-if(-not (Test-Path "$nugetPackagePath")) {
-	Start-BitsTransfer -Source $nugetUrl -Destination $nugetPackagePath -Dynamic -HttpMethod GET -ErrorAction SilentlyContinue
-}
+$nugetDownloadPath = "$nugetPackagePath.download"
 $exctractedFolderPath = [System.IO.Path]::Combine($tempFolder, "_extracted")
-if(Test-Path "$exctractedFolderPath") { 
+if(Test-Path "$exctractedFolderPath") {
 	Remove-Item "$exctractedFolderPath" -Recurse -Force -ErrorAction SilentlyContinue
 }
 # Extract the NuGet package
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-[System.IO.Compression.ZipFile]::ExtractToDirectory($nugetPackagePath, $exctractedFolderPath)
+
+foreach($attempt in 1..3) {
+	if(-not (Test-Path "$nugetPackagePath")) {
+		Remove-Item "$nugetDownloadPath" -Force -ErrorAction SilentlyContinue
+		Start-BitsTransfer -Source $nugetUrl -Destination $nugetDownloadPath -Dynamic -HttpMethod GET -ErrorAction SilentlyContinue
+		if(-not (Test-Path "$nugetDownloadPath")) {
+			# BITS is not available on every build agent, so fall back to a plain download.
+			Invoke-WebRequest -Uri $nugetUrl -OutFile $nugetDownloadPath -UseBasicParsing -ErrorAction SilentlyContinue
+		}
+		if(Test-Path "$nugetDownloadPath") {
+			# The package is only cached under its final name once it downloaded completely,
+			# a truncated file would otherwise be reused by every later import.
+			Move-Item -Path $nugetDownloadPath -Destination $nugetPackagePath -Force
+		}
+	}
+	try {
+		[System.IO.Compression.ZipFile]::ExtractToDirectory($nugetPackagePath, $exctractedFolderPath)
+		break
+	}
+	catch {
+		Remove-Item "$nugetPackagePath" -Force -ErrorAction SilentlyContinue
+		Remove-Item "$exctractedFolderPath" -Recurse -Force -ErrorAction SilentlyContinue
+		if($attempt -eq 3) {
+			Write-Warning "Failed to download Microsoft.Playwright from $nugetUrl : $($_.Exception.Message)"
+		}
+	}
+}
 
 Get-ChildItem $tempFolder -Recurse | Where-Object { $_.Name -eq "Microsoft.Playwright.dll" } | ForEach-Object {
     $dllPath = $_.FullName
 	Copy-Item -Path $dllPath -Destination "$($script:PlaywrightDll)" -Force
     [Reflection.Assembly]::Load([System.IO.File]::ReadAllBytes("$($script:PlaywrightDll)")) | Out-Null
+}
+# The driver in bin\.playwright must match the Microsoft.Playwright.dll version,
+# so refresh it from the same NuGet package the dll was taken from.
+$driverSource = [System.IO.Path]::Combine($exctractedFolderPath, '.playwright')
+$driverDestination = [System.IO.Path]::Combine($Script:BinFolder, '.playwright')
+$sourceVersionFile = [System.IO.Path]::Combine($driverSource, 'package', 'package.json')
+$destinationVersionFile = [System.IO.Path]::Combine($driverDestination, 'package', 'package.json')
+$driverIsOutdated = $true
+if((Test-Path "$sourceVersionFile") -and (Test-Path "$destinationVersionFile")) {
+	$driverIsOutdated = (Get-Content "$sourceVersionFile" -Raw | ConvertFrom-Json).version -ne (Get-Content "$destinationVersionFile" -Raw | ConvertFrom-Json).version
+}
+if($driverIsOutdated -and (Test-Path "$driverSource")) {
+	$stateBackup = $null
+	if(Test-Path "$Script:CookiesPath") {
+		$stateBackup = Get-Content "$Script:CookiesPath" -Raw
+	}
+	if(Test-Path "$driverDestination") {
+		Remove-Item "$driverDestination" -Recurse -Force -ErrorAction SilentlyContinue
+	}
+	# The package ships a node binary per platform, copying all of them would add ~450 MB to the module.
+	New-Item -Path "$driverDestination\node" -ItemType Directory -Force | Out-Null
+	Copy-Item -Path "$driverSource\package" -Destination "$driverDestination" -Recurse -Force
+	Copy-Item -Path "$driverSource\node\LICENSE" -Destination "$driverDestination\node" -Force -ErrorAction SilentlyContinue
+	Copy-Item -Path "$driverSource\node\win32_x64" -Destination "$driverDestination\node" -Recurse -Force
+	if($stateBackup) {
+		Set-Content -Path "$Script:CookiesPath" -Value $stateBackup
+	}
 }
 # Load the Playwright library
 $Env:PLAYWRIGHT_DRIVER_SEARCH_PATH = "$script:BinFolder"

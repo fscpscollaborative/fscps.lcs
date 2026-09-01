@@ -1,4 +1,4 @@
-
+﻿
 <#
     .SYNOPSIS
         Retrieves a list of shared assets from D365 LCS.
@@ -49,7 +49,7 @@ function Get-FSCPSLCSSharedAssetList {
         return $assetList.Data.Assets
     }
     END {
-        Cleanup-Session
+        Close-Session
         Invoke-TimeSignal -End
     }    
 }

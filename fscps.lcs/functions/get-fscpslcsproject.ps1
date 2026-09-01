@@ -1,4 +1,4 @@
-
+﻿
 <#
     .SYNOPSIS
         Retrieves details of a specific project from Microsoft Dynamics Lifecycle Services (LCS) using its project ID.
@@ -61,7 +61,7 @@ function Get-FSCPSLCSProject {
     }
 
     end {
-        Cleanup-Session
+        Close-Session
         Invoke-TimeSignal -End
     }
 }

@@ -1,11 +1,11 @@
-<#
+﻿<#
     .SYNOPSIS
         Cleans up the current session by closing and disposing of the browser context and page.
     .DESCRIPTION
-        The Cleanup-Session function is used to clean up the current session by closing and disposing of the browser context and page.
+        The Close-Session function is used to clean up the current session by closing and disposing of the browser context and page.
         It ensures that all resources are released properly to avoid memory leaks or stale sessions.    
     .EXAMPLE
-        PS C:\> Cleanup-Session
+        PS C:\> Close-Session
         
         Cleans up the current session by closing and disposing of the browser context and page.
     .NOTES
@@ -15,7 +15,7 @@
     .LINK
         https://playwright.dev
 #>
-function Cleanup-Session{
+function Close-Session{
     if($Script:CurrentPage)
     {
         $Script:CurrentPage.CloseAsync().GetAwaiter().GetResult() | Out-Null

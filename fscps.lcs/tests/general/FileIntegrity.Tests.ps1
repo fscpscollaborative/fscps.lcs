@@ -43,7 +43,7 @@ Describe "Verifying integrity of module files" {
 		}
 	}
     Context "Validating PS1 Script files" {
-        $allFiles = Get-ChildItem -Path $moduleRoot -Recurse -Filter "*.ps1" | Where-Object FullName -NotLike "$moduleRoot\tests\*"
+        $allFiles = Get-ChildItem -Path $moduleRoot -Recurse -Filter "*.ps1" | Where-Object FullName -NotLike "$moduleRoot\tests\*" | Where-Object FullName -NotLike "$moduleRoot\bin\*"
 		
         foreach ($file in $allFiles) {
             $name = $file.FullName.Replace("$moduleRoot\", '')
